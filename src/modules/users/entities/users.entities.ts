@@ -1,11 +1,9 @@
+import { AbstractEntity } from 'src/database/abstract.entities';
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity()
 @Unique(['email'])
-export class Users {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Users extends AbstractEntity<Users> {
   @Column()
   name: string;
 
@@ -14,8 +12,4 @@ export class Users {
 
   @Column({ select: false })
   password: string;
-
-  constructor(user: Partial<Users>) {
-    Object.assign(this, user);
-  }
 }

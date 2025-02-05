@@ -4,10 +4,10 @@ import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UsersRepository } from './users.repositories';
 import { LoginUserDto } from './dto/login-user.dto';
-import { EmailAlreadyExistsException } from 'src/common/exceptions/EmailAlreadyExistsException';
 import { InvalidCredentialsException } from 'src/common/exceptions/InvalidCredentialsException';
 import { UserNotFoundException } from 'src/common/exceptions/UserNotFoundException';
 import { Users } from './entities/users.entities';
+import { EmailAlreadyExistsException } from 'src/common/exceptions/EmailAlreadyExistsException';
 
 @Injectable()
 export class UserService {

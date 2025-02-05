@@ -11,7 +11,10 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UserService } from './users.service';
-import { sendCreatedResponse } from 'src/common/helpers/response.helper';
+import {
+  sendCreatedResponse,
+  sendSuccessReponse,
+} from 'src/common/helpers/response.helper';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { RegisterValidationPipe } from 'src/pipes/registerValidation.pipe';
@@ -33,8 +36,8 @@ export default class UserController {
   @UsePipes(LoginValidationPipe)
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginUser: LoginUserDto) {
-    const message = await this.userService.login(loginUser);
-    return sendCreatedResponse(loginUser, message);
+    const token = await this.userService.login(loginUser);
+    return sendSuccessReponse({ ...loginUser, token });
   }
 
   @Get('profile')
@@ -42,7 +45,7 @@ export default class UserController {
   @UseGuards(AuthGuard)
   async profile(@Req() request) {
     const { email } = request.user;
-    const message = await this.userService.profile(email);
-    return sendCreatedResponse(null, message);
+    const data = await this.userService.profile(email);
+    return sendSuccessReponse(data);
   }
 }

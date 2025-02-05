@@ -1,7 +1,6 @@
-export const sendSuccessReponse = (data: any, message: string = 'Success') => {
+export const sendSuccessReponse = (data: any) => {
   return {
-    data,
-    message: message,
+    ...data,
   };
 };
 
@@ -10,7 +9,7 @@ export const sendCreatedResponse = (
   message: string = 'Resource created successfully',
 ) => {
   return {
-    data,
+    ...data,
     message: message,
   };
 };
