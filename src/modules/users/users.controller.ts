@@ -4,6 +4,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -16,10 +18,14 @@ import {
   sendSuccessReponse,
 } from 'src/common/helpers/response.helper';
 import { LoginUserDto } from './dto/login-user.dto';
-import { AuthGuard } from 'src/common/guard/auth.guard';
+import { AuthenticationGuard } from 'src/common/guard/authentication.guard';
 import { RegisterValidationPipe } from 'src/pipes/registerValidation.pipe';
 import { LoginValidationPipe } from 'src/pipes/loginValidation.pipe';
 import { Request } from 'express';
+import { Permissions } from 'src/decorators/permissions.decorators';
+import { Resource } from '../roles/enums/resource.enum';
+import { Action } from '../roles/enums/action.enum';
+import { AuthorizationGuard } from 'src/common/guard/authorization.guard';
 
 @Controller('users')
 export default class UserController {
@@ -43,11 +49,22 @@ export default class UserController {
 
   @Get('profile')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthenticationGuard)
   async profile(@Req() request: Request) {
     const user = request.user as { email: string; id: number };
     const { email } = user;
-    const data = await this.userService.profile(email);
-    return sendSuccessReponse(data);
+    return await this.userService.profile(email);
+  }
+
+  @Get('assignRole/:roleName')
+  @HttpCode(HttpStatus.OK)
+  @Permissions([{ resource: Resource.users, actions: [Action.create, Action.update] }])
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  async assignRole(
+    @Req() request: Request,
+    @Param('roleName') roleName: string,
+  ) {
+    const user = request.user as { email: string; id: number };
+    return await this.userService.assignRole(user.email, roleName);
   }
 }

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
 import { InternalServerException } from 'src/common/exceptions/InternalServerException';
 import { CreateRoleDto } from './dto/roles.dto';
 import { Permission, Roles } from './entities/roles.entities';
@@ -13,7 +12,6 @@ export class RolesRepository {
     @InjectRepository(Roles)
     private readonly roleRepository: Repository<Roles>,
     private readonly entityManager: EntityManager,
-    private readonly configService: ConfigService,
   ) {}
 
   async create(createRole: CreateRoleDto): Promise<Roles> {

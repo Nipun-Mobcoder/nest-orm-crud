@@ -13,8 +13,8 @@ import * as jwt from 'jsonwebtoken';
 import { UserNotFoundException } from '../exceptions/UserNotFoundException';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-  private readonly logger = new Logger(AuthGuard.name);
+export class AuthenticationGuard implements CanActivate {
+  private readonly logger = new Logger(AuthenticationGuard.name);
   constructor(private readonly configService: ConfigService) {}
   canActivate(
     context: ExecutionContext,

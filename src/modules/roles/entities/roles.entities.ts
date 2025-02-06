@@ -2,6 +2,7 @@ import { AbstractEntity } from 'src/database/abstract.entities';
 import { Column, Entity, JoinTable, ManyToMany, Unique } from 'typeorm';
 import { Resource } from '../enums/resource.enum';
 import { Action } from '../enums/action.enum';
+import { Users } from 'src/modules/users/entities/users.entities';
 
 @Entity()
 export class Permission extends AbstractEntity<Permission> {
@@ -28,4 +29,7 @@ export class Roles extends AbstractEntity<Roles> {
   @ManyToMany(() => Permission, { cascade: true, eager: true })
   @JoinTable()
   permissions: Permission[];
+
+  @ManyToMany(() => Users, (user) => user.roles)
+  users: Users[];
 }

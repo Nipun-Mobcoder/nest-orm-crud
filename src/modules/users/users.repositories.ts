@@ -6,6 +6,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { InternalServerException } from 'src/common/exceptions/InternalServerException';
+import { RolesRepository } from '../roles/roles.repositories';
+import { UserNotFoundException } from 'src/common/exceptions/UserNotFoundException';
+import { Roles } from '../roles/entities/roles.entities';
 
 @Injectable()
 export class UsersRepository {
@@ -15,16 +18,30 @@ export class UsersRepository {
     private readonly userRepository: Repository<Users>,
     private readonly entityManager: EntityManager,
     private readonly configService: ConfigService,
+    private readonly rolesRepository: RolesRepository,
   ) {}
 
   async create(createUser: CreateUserDto): Promise<Users> {
     try {
-      const user = new Users(createUser);
+      let role: Roles | null = null;
+      if (createUser.role) {
+        role = await this.rolesRepository.findRole(createUser.role);
+        if (!role) {
+          throw new UserNotFoundException(createUser.role);
+        }
+      }
+
+      const user = new Users({
+        email: createUser.email,
+        name: createUser.name,
+        password: createUser.password,
+        roles: role ? [role] : undefined,
+      });
       const data = await this.entityManager.save(user);
       return data;
     } catch (e) {
       this.logger.error(e);
-      throw new InternalServerException();
+      throw new InternalServerException(e?.message);
     }
   }
 
@@ -42,7 +59,7 @@ export class UsersRepository {
       });
     } catch (e) {
       this.logger.error(e);
-      throw new InternalServerException();
+      throw new InternalServerException(e?.message);
     }
   }
 
@@ -57,9 +74,9 @@ export class UsersRepository {
       });
 
       return token;
-    } catch (error) {
-      this.logger.error(error);
-      throw new InternalServerException();
+    } catch (e) {
+      this.logger.error(e);
+      throw new InternalServerException(e?.message);
     }
   };
 
@@ -72,7 +89,39 @@ export class UsersRepository {
       });
     } catch (e) {
       this.logger.error(e);
-      throw new InternalServerException();
+      throw new InternalServerException(e?.message);
     }
+  }
+
+  async assignRole(email: string, roleName: string): Promise<Users | null> {
+    try {
+      const role = await this.rolesRepository.findRole(roleName);
+      if (!role) {
+        throw new UserNotFoundException(roleName);
+      }
+
+      const user = await this.userRepository.findOneBy({ email });
+      if (!user) {
+        throw new UserNotFoundException(email);
+      }
+
+      if (!user.roles) {
+        user.roles = [];
+      }
+      user.roles.push(role);
+      return await this.entityManager.save(user);
+    } catch (e) {
+      throw new InternalServerException(e?.message);
+    }
+  }
+
+  async fetchUserPermissions(userId: number): Promise<any> {
+    const userDetails = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+      relations: ['roles'],
+    });
+    return userDetails?.roles;
   }
 }

@@ -8,6 +8,7 @@ import { InvalidCredentialsException } from 'src/common/exceptions/InvalidCreden
 import { UserNotFoundException } from 'src/common/exceptions/UserNotFoundException';
 import { Users } from './entities/users.entities';
 import { EmailAlreadyExistsException } from 'src/common/exceptions/EmailAlreadyExistsException';
+import { InternalServerException } from 'src/common/exceptions/InternalServerException';
 
 @Injectable()
 export class UserService {
@@ -45,5 +46,19 @@ export class UserService {
 
   async profile(email: string): Promise<any> {
     return await this.userRepository.fetchUser(email);
+  }
+
+  async assignRole(email: string, roleName: string): Promise<Users> {
+    console.log(email, roleName);
+    const userAssignedRole = await this.userRepository.assignRole(
+      email,
+      roleName,
+    );
+    if (!userAssignedRole) {
+      console.log(userAssignedRole);
+      throw new InternalServerException('Role was not assigned');
+    }
+
+    return userAssignedRole;
   }
 }

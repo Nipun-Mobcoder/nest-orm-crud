@@ -14,4 +14,8 @@ export class RolesService {
 
     return this.rolesRepository.create(createRole);
   }
+
+  async updateRole(createRole: CreateRoleDto): Promise<Roles> {
+    return this.rolesRepository.create(createRole);
+  }
 }
