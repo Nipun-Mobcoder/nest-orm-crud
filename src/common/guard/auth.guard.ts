@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import * as jwt from 'jsonwebtoken';
+import { UserNotFoundException } from '../exceptions/UserNotFoundException';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -39,7 +40,12 @@ export class AuthGuard implements CanActivate {
         id: string;
         email: string;
       };
-      request.user = { id: decoded.id, email: decoded.email };
+
+      if (!decoded || !decoded.id || !decoded.email) {
+        throw new UserNotFoundException(decoded?.email || 'User');
+      }
+
+      request.user = { id: parseInt(decoded.id), email: decoded.email };
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerException(error.message);

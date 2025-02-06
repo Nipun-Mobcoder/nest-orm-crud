@@ -37,6 +37,7 @@ export class UsersRepository {
         select: {
           email: true,
           password: true,
+          id: true,
         },
       });
     } catch (e) {
@@ -59,19 +60,6 @@ export class UsersRepository {
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerException();
-    }
-  };
-
-  fetchDetails = (token: string): Users => {
-    try {
-      const secret = this.configService.get<string>('JWT_SECRET');
-      if (!secret) {
-        throw new Error('JWT_SECRET is not defined in environment variables.');
-      }
-      return jwt.verify(token, secret) as Users;
-    } catch (error) {
-      this.logger.error(error);
-      throw new InternalServerException(error.message);
     }
   };
 

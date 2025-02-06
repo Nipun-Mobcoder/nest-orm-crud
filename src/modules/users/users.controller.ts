@@ -19,6 +19,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { RegisterValidationPipe } from 'src/pipes/registerValidation.pipe';
 import { LoginValidationPipe } from 'src/pipes/loginValidation.pipe';
+import { Request } from 'express';
 
 @Controller('users')
 export default class UserController {
@@ -43,8 +44,9 @@ export default class UserController {
   @Get('profile')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
-  async profile(@Req() request) {
-    const { email } = request.user;
+  async profile(@Req() request: Request) {
+    const user = request.user as { email: string; id: number };
+    const { email } = user;
     const data = await this.userService.profile(email);
     return sendSuccessReponse(data);
   }

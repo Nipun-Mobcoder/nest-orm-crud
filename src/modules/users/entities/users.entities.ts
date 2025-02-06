@@ -1,5 +1,6 @@
 import { AbstractEntity } from 'src/database/abstract.entities';
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Products } from 'src/modules/products/entities/products.entities';
+import { Column, Entity, JoinColumn, OneToMany, Unique } from 'typeorm';
 
 @Entity()
 @Unique(['email'])
@@ -12,4 +13,10 @@ export class Users extends AbstractEntity<Users> {
 
   @Column({ select: false })
   password: string;
+
+  @OneToMany(() => Products, (product) => product.user, {
+    cascade: true,
+    eager: true,
+  })
+  products: Products[];
 }

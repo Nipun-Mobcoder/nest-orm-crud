@@ -10,8 +10,8 @@ export class RolesService {
 
   async createRole(createRole: CreateRoleDto): Promise<Roles> {
     const isPresent = await this.rolesRepository.findRole(createRole.name);
-        if (isPresent) throw new RolesAlreadyExistsException(createRole.name);
-    
-        return this.rolesRepository.create(createRole);
+    if (isPresent) throw new RolesAlreadyExistsException(createRole.name);
+
+    return this.rolesRepository.create(createRole);
   }
 }
