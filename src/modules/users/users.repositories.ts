@@ -8,7 +8,6 @@ import { ConfigService } from '@nestjs/config';
 import { InternalServerException } from 'src/common/exceptions/InternalServerException';
 import { RolesRepository } from '../roles/roles.repositories';
 import { UserNotFoundException } from 'src/common/exceptions/UserNotFoundException';
-import { Roles } from '../roles/entities/roles.entities';
 
 @Injectable()
 export class UsersRepository {
@@ -23,20 +22,7 @@ export class UsersRepository {
 
   async create(createUser: CreateUserDto): Promise<Users> {
     try {
-      let role: Roles | null = null;
-      if (createUser.role) {
-        role = await this.rolesRepository.findRole(createUser.role);
-        if (!role) {
-          throw new UserNotFoundException(createUser.role);
-        }
-      }
-
-      const user = new Users({
-        email: createUser.email,
-        name: createUser.name,
-        password: createUser.password,
-        roles: role ? [role] : undefined,
-      });
+      const user = new Users(createUser);
       const data = await this.entityManager.save(user);
       return data;
     } catch (e) {

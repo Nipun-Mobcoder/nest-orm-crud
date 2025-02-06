@@ -26,6 +26,7 @@ import { Permissions } from 'src/decorators/permissions.decorators';
 import { Resource } from '../roles/enums/resource.enum';
 import { Action } from '../roles/enums/action.enum';
 import { AuthorizationGuard } from 'src/common/guard/authorization.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('users')
 export default class UserController {
@@ -50,6 +51,7 @@ export default class UserController {
   @Get('profile')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthenticationGuard)
+  @ApiBearerAuth("AuthGuard")
   async profile(@Req() request: Request) {
     const user = request.user as { email: string; id: number };
     const { email } = user;
