@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Patch,
   Post,
@@ -27,10 +28,15 @@ import { Resource } from '../roles/enums/resource.enum';
 import { Action } from '../roles/enums/action.enum';
 import { AuthorizationGuard } from 'src/common/guard/authorization.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { RedisService } from 'src/redis/redis.service';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Controller('users')
 export default class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly redisService: RedisService,
+  ) {}
 
   @Post('register')
   @UsePipes(RegisterValidationPipe)
@@ -45,13 +51,14 @@ export default class UserController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginUser: LoginUserDto) {
     const token = await this.userService.login(loginUser);
+    await this.redisService.set(`token:${loginUser.email}`, token);
     return sendSuccessReponse({ ...loginUser, token });
   }
 
   @Get('profile')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthenticationGuard)
-  @ApiBearerAuth("AuthGuard")
+  @ApiBearerAuth('AuthGuard')
   async profile(@Req() request: Request) {
     const user = request.user as { email: string; id: number };
     const { email } = user;
@@ -60,7 +67,9 @@ export default class UserController {
 
   @Get('assignRole/:roleName')
   @HttpCode(HttpStatus.OK)
-  @Permissions([{ resource: Resource.users, actions: [Action.create, Action.update] }])
+  @Permissions([
+    { resource: Resource.users, actions: [Action.create, Action.update] },
+  ])
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   async assignRole(
     @Req() request: Request,

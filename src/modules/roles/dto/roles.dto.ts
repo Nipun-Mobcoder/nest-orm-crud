@@ -6,12 +6,18 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRoleDto {
   @IsString()
-  @ApiProperty({ description: "This is the name of the role and it should be unique.", example: "Admin" })
+  @ApiProperty({
+    description: 'This is the name of the role and it should be unique.',
+    example: 'Admin',
+  })
   name: string;
 
   @ValidateNested({ each: true })
   @Type(() => Permission)
-  @ApiProperty({ description: "This is an array which should provide the Permissions.", example: [{"resource": "settings", "actions": ["update", "create"]}] })
+  @ApiProperty({
+    description: 'This is an array which should provide the Permissions.',
+    example: [{ resource: 'settings', actions: ['update', 'create'] }],
+  })
   permissions: Permission[];
 }
 

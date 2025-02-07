@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
 import { CreateUserDto } from './dto/createUser.dto';
@@ -9,6 +9,8 @@ import { UserNotFoundException } from 'src/common/exceptions/UserNotFoundExcepti
 import { Users } from './entities/users.entities';
 import { EmailAlreadyExistsException } from 'src/common/exceptions/EmailAlreadyExistsException';
 import { InternalServerException } from 'src/common/exceptions/InternalServerException';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class UserService {
@@ -41,7 +43,8 @@ export class UserService {
       throw new InvalidCredentialsException();
     }
 
-    return this.userRepository.createToken(userData);
+    const token = this.userRepository.createToken(userData);
+    return token;
   }
 
   async profile(email: string): Promise<any> {

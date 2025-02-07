@@ -17,13 +17,15 @@ async function bootstrap() {
     }),
   );
   const config = new DocumentBuilder()
-    .setTitle("E-Commerce App with RBAC")
-    .setDescription("This is an E-Commerce App built in nestjs using TYPEORM for PostGresSQL with Role Based Access Control.")
-    .setVersion("1.0")
+    .setTitle('E-Commerce App with RBAC')
+    .setDescription(
+      'This is an E-Commerce App built in nestjs using TYPEORM for PostGresSQL with Role Based Access Control.',
+    )
+    .setVersion('1.0')
     .build();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document)
-  await app.listen(process.env.PORT ?? 3000);
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+  await app.listen(process.env.PORT ?? 5000);
 }
 bootstrap();
