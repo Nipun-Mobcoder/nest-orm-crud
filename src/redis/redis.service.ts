@@ -1,17 +1,25 @@
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import KeyvRedis from '@keyv/redis';
 import {
   Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { Cacheable } from 'cacheable';
 
 @Injectable()
 export class RedisService {
   private logger = new Logger(RedisService.name);
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
-    const storeType = this.cacheManager.stores;
-    console.log(storeType);
+  constructor(
+    @Inject('CACHE_INSTANCE') private readonly cacheManager: Cacheable,
+  ) {
+    if (this.cacheManager.secondary instanceof KeyvRedis) {
+      this.logger.log('Redis client detected');
+    } else {
+      this.logger.warn(
+        'Redis client NOT detected, might be using memory store',
+      );
+    }
   }
 
   async set(key: string, value: unknown): Promise<void> {
@@ -20,8 +28,8 @@ export class RedisService {
       this.logger.log(`token is: ${token}`);
     } catch (error) {
       this.logger.error(`Failed to set key: ${key}`, error);
+      throw new InternalServerErrorException();
     }
-    throw new InternalServerErrorException();
   }
 
   async get<T>(key: string): Promise<T | undefined> {

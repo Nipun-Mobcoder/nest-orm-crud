@@ -4,9 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Inject,
   Param,
-  Patch,
   Post,
   Req,
   UseGuards,
@@ -29,7 +27,6 @@ import { Action } from '../roles/enums/action.enum';
 import { AuthorizationGuard } from 'src/common/guard/authorization.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { RedisService } from 'src/redis/redis.service';
-import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Controller('users')
 export default class UserController {
@@ -60,9 +57,13 @@ export default class UserController {
   @UseGuards(AuthenticationGuard)
   @ApiBearerAuth('AuthGuard')
   async profile(@Req() request: Request) {
-    const user = request.user as { email: string; id: number };
-    const { email } = user;
-    return await this.userService.profile(email);
+    try {
+      const user = request.user as { email: string; id: number };
+      const { email } = user;
+      return await this.userService.profile(email);
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   @Get('assignRole/:roleName')

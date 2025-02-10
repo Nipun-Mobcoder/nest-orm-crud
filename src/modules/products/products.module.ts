@@ -4,9 +4,10 @@ import { ProductsController } from './products.controller';
 import { ProductRepositories } from './products.repositories';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Products } from './entities/products.entities';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Products])],
+  imports: [TypeOrmModule.forFeature([Products]), RedisModule],
   controllers: [ProductsController],
   providers: [ProductsService, ProductRepositories],
 })

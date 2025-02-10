@@ -2,26 +2,23 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisService } from './redis.service';
-import { redisStore } from 'cache-manager-redis-store';
+import KeyvRedis, { createKeyv } from '@keyv/redis';
+import { Cacheable } from 'cacheable';
 
 @Module({
-  imports: [
-    CacheModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const store = await redisStore({
-          socket: {
-            port: configService.getOrThrow('REDIS_PORT'),
-            host: configService.getOrThrow('REDIS_HOST'),
-          },
-          password: configService.getOrThrow('REDIS_PASSWORD'),
-        });
-        return { store };
+  imports: [ConfigModule],
+  providers: [
+    {
+      provide: 'CACHE_INSTANCE',
+      useFactory: (configService: ConfigService) => {
+        const redisUrl = `redis://default:${configService.getOrThrow('REDIS_PASSWORD')}@${configService.getOrThrow('REDIS_HOST')}:${configService.getOrThrow('REDIS_PORT')}`;
+        const secondary = new KeyvRedis(redisUrl, { namespace: '' });
+        return new Cacheable({ secondary, ttl: '1h' });
       },
       inject: [ConfigService],
-    }),
+    },
+    RedisService,
   ],
-  providers: [RedisService],
-  exports: [RedisService],
+  exports: ['CACHE_INSTANCE', RedisService],
 })
 export class RedisModule {}

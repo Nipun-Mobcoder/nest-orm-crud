@@ -11,14 +11,18 @@ import { Observable } from 'rxjs';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import * as jwt from 'jsonwebtoken';
 import { UserNotFoundException } from '../exceptions/UserNotFoundException';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
   private readonly logger = new Logger(AuthenticationGuard.name);
-  constructor(private readonly configService: ConfigService) {}
-  canActivate(
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
+  ) {}
+  async canActivate(
     context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  ): Promise<boolean | Promise<boolean> | Observable<boolean>> {
     const request = context.switchToHttp().getRequest<Request>();
     const authHeader = request.header('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -43,6 +47,12 @@ export class AuthenticationGuard implements CanActivate {
 
       if (!decoded || !decoded.id || !decoded.email) {
         throw new UserNotFoundException(decoded?.email || 'User');
+      }
+      const data = await this.redisService.get<string>(
+        `token:${decoded.email}`,
+      );
+      if (!data || data !== token) {
+        throw new UnauthorizedException('Token has expired.');
       }
 
       request.user = { id: parseInt(decoded.id), email: decoded.email };
