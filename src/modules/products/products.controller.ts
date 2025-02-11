@@ -2,12 +2,12 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
 import { AuthenticationGuard } from 'src/common/guard/authentication.guard';
 import { Request } from 'express';
 import { CreateProductsDto } from './dto/products.dto';
@@ -15,34 +15,64 @@ import { Permissions } from 'src/decorators/permissions.decorators';
 import { Resource } from '../roles/enums/resource.enum';
 import { Action } from '../roles/enums/action.enum';
 import { AuthorizationGuard } from 'src/common/guard/authorization.guard';
+import { ClientProxy } from '@nestjs/microservices';
+import { InternalServerException } from 'src/common/exceptions/InternalServerException';
+import { firstValueFrom } from 'rxjs';
 
 @Controller('products')
 @UseGuards(AuthenticationGuard)
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    @Inject('Redis_Client') private readonly redisClient: ClientProxy,
+  ) {}
 
   @Get(':name')
-  getProduct(@Req() request: Request, @Param('name') name: string) {
+  async getProduct(@Req() request: Request, @Param('name') name: string) {
     const users = request.user as { id: number; email: string };
     name = name.replaceAll('_', ' ');
-    return this.productsService.getProduct(name, users.id);
+    await this.redisClient.connect();
+    const product = await firstValueFrom(
+      this.redisClient.send({ cmd: 'FIND_PRODUCT' }, { id: users.id, name }),
+    );
+    if (!product) {
+      throw new InternalServerException(
+        `Product ${name} not found for user ${users.id}`,
+      );
+    }
+
+    return product;
   }
 
   @Get()
   @UseGuards(AuthorizationGuard)
   @Permissions([{ resource: Resource.products, actions: [Action.read] }])
-  getProducts(@Req() request: Request) {
+  async getProducts(@Req() request: Request) {
     const users = request.user as { id: number; email: string };
-    return this.productsService.getProducts(users.id);
+    const products = await firstValueFrom(
+      this.redisClient.send({ cmd: 'FIND_ALL_PRODUCTS' }, { id: users.id }),
+    );
+    if (!products) {
+      throw new InternalServerException();
+    }
+    return products;
   }
 
   @Post('create')
   @Permissions([{ resource: Resource.products, actions: [Action.create] }])
-  createProduct(
+  async createProduct(
     @Req() request: Request,
     @Body() createProduct: CreateProductsDto,
   ) {
     const users = request.user as { id: number; email: string };
-    return this.productsService.createProduct(users.id, createProduct);
+    const products = await firstValueFrom(
+      this.redisClient.send(
+        { cmd: 'CREATE_PRODUCT' },
+        { createProduct, id: users.id },
+      ),
+    );
+    if (!products) {
+      throw new InternalServerException();
+    }
+    return products;
   }
 }

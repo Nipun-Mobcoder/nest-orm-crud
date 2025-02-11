@@ -7,6 +7,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { ProductsModule } from './modules/products/products.module';
 import { RedisModule } from './redis/redis.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { MicroServiceModule } from './microservice/microservice.module';
 
 @Module({
   imports: [
@@ -16,9 +17,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 5,
+        limit: 15,
       },
     ]),
+    MicroServiceModule,
     RedisModule,
     UsersModule,
     RolesModule,

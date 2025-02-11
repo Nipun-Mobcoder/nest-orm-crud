@@ -3,18 +3,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
-import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
-import { ProductRepositories } from './products.repositories';
 import { Products } from './entities/products.entities';
 import { RedisModule } from 'src/redis/redis.module';
+import { MicroServiceModule } from 'src/microservice/microservice.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Products]), RedisModule],
+  imports: [
+    TypeOrmModule.forFeature([Products]),
+    RedisModule,
+    MicroServiceModule,
+  ],
   controllers: [ProductsController],
   providers: [
-    ProductsService,
-    ProductRepositories,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
