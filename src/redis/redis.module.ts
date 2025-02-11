@@ -1,8 +1,7 @@
-import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisService } from './redis.service';
-import KeyvRedis, { createKeyv } from '@keyv/redis';
+import KeyvRedis from '@keyv/redis';
 import { Cacheable } from 'cacheable';
 
 @Module({

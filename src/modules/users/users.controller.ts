@@ -27,6 +27,7 @@ import { Action } from '../roles/enums/action.enum';
 import { AuthorizationGuard } from 'src/common/guard/authorization.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { RedisService } from 'src/redis/redis.service';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('users')
 export default class UserController {
@@ -46,6 +47,7 @@ export default class UserController {
   @Post('login')
   @UsePipes(LoginValidationPipe)
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   async login(@Body() loginUser: LoginUserDto) {
     const token = await this.userService.login(loginUser);
     await this.redisService.set(`token:${loginUser.email}`, token);
@@ -62,7 +64,7 @@ export default class UserController {
       const { email } = user;
       return await this.userService.profile(email);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
