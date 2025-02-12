@@ -51,14 +51,12 @@ export class UserService {
     return await this.userRepository.fetchUser(email);
   }
 
-  async assignRole(email: string, roleName: string): Promise<Users> {
-    console.log(email, roleName);
+  async assignRole(roleName: string, userEmail: string): Promise<Users> {
     const userAssignedRole = await this.userRepository.assignRole(
-      email,
+      userEmail,
       roleName,
     );
     if (!userAssignedRole) {
-      console.log(userAssignedRole);
       throw new InternalServerException('Role was not assigned');
     }
 

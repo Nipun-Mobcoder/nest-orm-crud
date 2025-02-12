@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
   UsePipes,
@@ -60,13 +61,9 @@ export default class UserController {
   @UseGuards(AuthenticationGuard)
   @ApiBearerAuth('AuthGuard')
   async profile(@Req() request: Request) {
-    try {
-      const user = request.user as { email: string; id: number };
-      const { email } = user;
-      return await this.userService.profile(email);
-    } catch (error) {
-      console.log(error);
-    }
+    const user = request.user as { email: string; id: number };
+    const { email } = user;
+    return await this.userService.profile(email);
   }
 
   @Get('assignRole/:roleName')
@@ -76,10 +73,9 @@ export default class UserController {
   ])
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   async assignRole(
-    @Req() request: Request,
     @Param('roleName') roleName: string,
+    @Query('email') email: string,
   ) {
-    const user = request.user as { email: string; id: number };
-    return await this.userService.assignRole(user.email, roleName);
+    return await this.userService.assignRole(roleName, email);
   }
 }

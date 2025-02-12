@@ -36,11 +36,10 @@ export class AuthorizationGuard implements CanActivate {
     if (!routePermissions) {
       return true;
     }
-
     const userRoles: Roles[] = await this.userRepository.fetchUserPermissions(
       user.id,
     );
-    if (!userRoles) {
+    if (!userRoles || userRoles.length === 0) {
       throw new PermissionNotProvidedException(user.email);
     }
 

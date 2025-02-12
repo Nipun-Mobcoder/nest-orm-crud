@@ -5,10 +5,10 @@ import { ProductType } from '../enums/productType.enum';
 
 @Entity()
 export class Products extends AbstractEntity<Products> {
-  @Column()
+  @Column({ unique: true })
   name: string;
 
-  @Column({ unique: true })
+  @Column()
   productType: ProductType;
 
   @Column()
